@@ -1,0 +1,1 @@
+ C:\\Users\\LOQ\ LENOVO\\Desktop\\bitacora-facial\\mobile\\.dart_tool\\flutter_build\\730655338febb7e068258adae10a068b\\dart_build_result.json: 

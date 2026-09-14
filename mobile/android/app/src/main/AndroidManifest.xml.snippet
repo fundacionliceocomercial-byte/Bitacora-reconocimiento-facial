@@ -1,0 +1,22 @@
+<!--
+  Este es un FRAGMENTO de referencia. Cuando generes el proyecto Flutter
+  completo con `flutter create .`, se creará el AndroidManifest.xml real
+  en esta misma ruta: agrega estas líneas dentro de él (el permiso antes
+  de <application>, y el atributo dentro de <application>).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+
+    <application
+        android:label="Bitácora de Personal"
+        android:usesCleartextTraffic="true">
+        <!--
+          usesCleartextTraffic="true" permite conectarse a tu backend por
+          http:// en desarrollo (por ejemplo http://192.168.1.10:8000).
+          Quítalo cuando el backend ya esté en https:// en producción.
+        -->
+    </application>
+</manifest>

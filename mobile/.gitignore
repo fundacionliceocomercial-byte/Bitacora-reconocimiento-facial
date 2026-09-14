@@ -1,0 +1,28 @@
+# Backend - Python / Django
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/.env
+backend/db.sqlite3
+backend/media/
+backend/staticfiles/
+
+# Frontend - Node / React
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# Mobile - Flutter
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/build/
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+
+# General
+.vscode/
+*.log

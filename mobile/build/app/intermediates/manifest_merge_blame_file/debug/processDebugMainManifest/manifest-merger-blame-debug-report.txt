@@ -1,0 +1,276 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.attendance_mobile_temp"
+4    android:versionCode="1"
+5    android:versionName="0.1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+9        android:targetSdkVersion="35" />
+10    <!--
+11         The INTERNET permission is required for development. Specifically,
+12         the Flutter tool needs it to communicate with the running application
+13         to allow setting breakpoints, to provide hot reload, etc.
+14    -->
+15    <uses-permission android:name="android.permission.INTERNET" />
+15-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:3:1-63
+15-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:3:18-60
+16    <uses-permission android:name="android.permission.CAMERA" />
+16-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:2:1-61
+16-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:2:18-58
+17
+18    <uses-feature
+18-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:4:1-80
+19        android:name="android.hardware.camera"
+19-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:4:15-53
+20        android:required="true" />
+20-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:4:54-77
+21    <!--
+22 Required to query activities that can process text, see:
+23         https://developer.android.com/training/package-visibility and
+24         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+25
+26         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin.
+27    -->
+28    <queries>
+28-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:43:5-48:15
+29        <intent>
+29-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:44:9-47:18
+30            <action android:name="android.intent.action.PROCESS_TEXT" />
+30-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:45:13-72
+30-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:45:21-70
+31
+32            <data android:mimeType="text/plain" />
+32-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:46:13-50
+32-->C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\android\app\src\main\AndroidManifest.xml:46:19-48
+33        </intent>
+34    </queries>
+35
+36    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+36-->[:camera_android] C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\build\camera_android\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:5-71
+36-->[:camera_android] C:\Users\LOQ LENOVO\Desktop\bitacora-facial\mobile\build\camera_android\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:22-68
+37
+38    <permission
+38-->[androidx.core:core:1.13.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\8cf478dec41eed746328fa8046755ba2\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
+39        android:name="com.example.attendance_mobile_temp.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+39-->[androidx.core:core:1.13.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\8cf478dec41eed746328fa8046755ba2\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
+40        android:protectionLevel="signature" />
+40-->[androidx.core:core:1.13.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\8cf478dec41eed746328fa8046755ba2\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
+41
+42    <uses-permission android:name="com.example.attendance_mobile_temp.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" /> <!-- Although the *SdkVersion is captured in gradle build files, this is required for non gradle builds -->
+42-->[androidx.core:core:1.13.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\8cf478dec41eed746328fa8046755ba2\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
+42-->[androidx.core:core:1.13.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\8cf478dec41eed746328fa8046755ba2\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
+43    <!-- <uses-sdk android:minSdkVersion="14"/> -->
+44    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+44-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\3fe589753a4aba9a36c72c795b877407\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:25:5-79
+44-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\3fe589753a4aba9a36c72c795b877407\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:25:22-76
+45
+46    <application
+47        android:name="android.app.Application"
+48        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+48-->[androidx.core:core:1.13.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\8cf478dec41eed746328fa8046755ba2\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
+49        android:debuggable="true"
+50        android:extractNativeLibs="true"
+51        android:icon="@mipmap/ic_launcher"
+52        android:label="attendance_mobile_temp"
+53        android:usesCleartextTraffic="true" >
+54        <activity
+55            android:name="com.example.attendance_mobile_temp.MainActivity"
+56            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+57            android:exported="true"
+58            android:hardwareAccelerated="true"
+59            android:launchMode="singleTop"
+60            android:taskAffinity=""
+61            android:theme="@style/LaunchTheme"
+62            android:windowSoftInputMode="adjustResize" >
+63
+64            <!--
+65                 Specifies an Android theme to apply to this Activity as soon as
+66                 the Android process has started. This theme is visible to the user
+67                 while the Flutter UI initializes. After that, this theme continues
+68                 to determine the Window background behind the Flutter UI.
+69            -->
+70            <meta-data
+71                android:name="io.flutter.embedding.android.NormalTheme"
+72                android:resource="@style/NormalTheme" />
+73
+74            <intent-filter>
+75                <action android:name="android.intent.action.MAIN" />
+76
+77                <category android:name="android.intent.category.LAUNCHER" />
+78            </intent-filter>
+79        </activity>
+80        <!--
+81             Don't delete the meta-data below.
+82             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java
+83        -->
+84        <meta-data
+85            android:name="flutterEmbedding"
+86            android:value="2" />
+87
+88        <service
+88-->[com.google.android.gms:play-services-mlkit-face-detection:17.1.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\4832077f8f88ed65695c31742dfa19d5\transformed\jetified-play-services-mlkit-face-detection-17.1.0\AndroidManifest.xml:9:9-15:19
+89            android:name="com.google.mlkit.common.internal.MlKitComponentDiscoveryService"
+89-->[com.google.android.gms:play-services-mlkit-face-detection:17.1.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\4832077f8f88ed65695c31742dfa19d5\transformed\jetified-play-services-mlkit-face-detection-17.1.0\AndroidManifest.xml:10:13-91
+90            android:directBootAware="true"
+90-->[com.google.mlkit:common:18.11.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\eb2477fd659c6578bc869f4d6edf4d2b\transformed\jetified-common-18.11.0\AndroidManifest.xml:17:13-43
+91            android:exported="false" >
+91-->[com.google.android.gms:play-services-mlkit-face-detection:17.1.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\4832077f8f88ed65695c31742dfa19d5\transformed\jetified-play-services-mlkit-face-detection-17.1.0\AndroidManifest.xml:11:13-37
+92            <meta-data
+92-->[com.google.android.gms:play-services-mlkit-face-detection:17.1.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\4832077f8f88ed65695c31742dfa19d5\transformed\jetified-play-services-mlkit-face-detection-17.1.0\AndroidManifest.xml:12:13-14:85
+93                android:name="com.google.firebase.components:com.google.mlkit.vision.face.internal.FaceRegistrar"
+93-->[com.google.android.gms:play-services-mlkit-face-detection:17.1.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\4832077f8f88ed65695c31742dfa19d5\transformed\jetified-play-services-mlkit-face-detection-17.1.0\AndroidManifest.xml:13:17-114
+94                android:value="com.google.firebase.components.ComponentRegistrar" />
+94-->[com.google.android.gms:play-services-mlkit-face-detection:17.1.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\4832077f8f88ed65695c31742dfa19d5\transformed\jetified-play-services-mlkit-face-detection-17.1.0\AndroidManifest.xml:14:17-82
+95            <meta-data
+95-->[com.google.mlkit:vision-common:17.3.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\a05b5895d4441831cef9203768ec4801\transformed\jetified-vision-common-17.3.0\AndroidManifest.xml:12:13-14:85
+96                android:name="com.google.firebase.components:com.google.mlkit.vision.common.internal.VisionCommonRegistrar"
+96-->[com.google.mlkit:vision-common:17.3.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\a05b5895d4441831cef9203768ec4801\transformed\jetified-vision-common-17.3.0\AndroidManifest.xml:13:17-124
+97                android:value="com.google.firebase.components.ComponentRegistrar" />
+97-->[com.google.mlkit:vision-common:17.3.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\a05b5895d4441831cef9203768ec4801\transformed\jetified-vision-common-17.3.0\AndroidManifest.xml:14:17-82
+98            <meta-data
+98-->[com.google.mlkit:common:18.11.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\eb2477fd659c6578bc869f4d6edf4d2b\transformed\jetified-common-18.11.0\AndroidManifest.xml:20:13-22:85
+99                android:name="com.google.firebase.components:com.google.mlkit.common.internal.CommonComponentRegistrar"
+99-->[com.google.mlkit:common:18.11.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\eb2477fd659c6578bc869f4d6edf4d2b\transformed\jetified-common-18.11.0\AndroidManifest.xml:21:17-120
+100                android:value="com.google.firebase.components.ComponentRegistrar" />
+100-->[com.google.mlkit:common:18.11.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\eb2477fd659c6578bc869f4d6edf4d2b\transformed\jetified-common-18.11.0\AndroidManifest.xml:22:17-82
+101        </service>
+102
+103        <provider
+103-->[com.google.mlkit:common:18.11.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\eb2477fd659c6578bc869f4d6edf4d2b\transformed\jetified-common-18.11.0\AndroidManifest.xml:9:9-13:38
+104            android:name="com.google.mlkit.common.internal.MlKitInitProvider"
+104-->[com.google.mlkit:common:18.11.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\eb2477fd659c6578bc869f4d6edf4d2b\transformed\jetified-common-18.11.0\AndroidManifest.xml:10:13-78
+105            android:authorities="com.example.attendance_mobile_temp.mlkitinitprovider"
+105-->[com.google.mlkit:common:18.11.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\eb2477fd659c6578bc869f4d6edf4d2b\transformed\jetified-common-18.11.0\AndroidManifest.xml:11:13-69
+106            android:exported="false"
+106-->[com.google.mlkit:common:18.11.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\eb2477fd659c6578bc869f4d6edf4d2b\transformed\jetified-common-18.11.0\AndroidManifest.xml:12:13-37
+107            android:initOrder="99" />
+107-->[com.google.mlkit:common:18.11.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\eb2477fd659c6578bc869f4d6edf4d2b\transformed\jetified-common-18.11.0\AndroidManifest.xml:13:13-35
+108
+109        <activity
+109-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\f6fa56a75284f8e0ea5d27971291f441\transformed\jetified-play-services-base-18.5.0\AndroidManifest.xml:5:9-173
+110            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+110-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\f6fa56a75284f8e0ea5d27971291f441\transformed\jetified-play-services-base-18.5.0\AndroidManifest.xml:5:19-85
+111            android:exported="false"
+111-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\f6fa56a75284f8e0ea5d27971291f441\transformed\jetified-play-services-base-18.5.0\AndroidManifest.xml:5:146-170
+112            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+112-->[com.google.android.gms:play-services-base:18.5.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\f6fa56a75284f8e0ea5d27971291f441\transformed\jetified-play-services-base-18.5.0\AndroidManifest.xml:5:86-145
+113
+114        <meta-data
+114-->[com.google.android.gms:play-services-basement:18.4.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5568a35fadd1ad6d1c703f16a16e5540\transformed\jetified-play-services-basement-18.4.0\AndroidManifest.xml:6:9-122
+115            android:name="com.google.android.gms.version"
+115-->[com.google.android.gms:play-services-basement:18.4.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5568a35fadd1ad6d1c703f16a16e5540\transformed\jetified-play-services-basement-18.4.0\AndroidManifest.xml:6:20-65
+116            android:value="@integer/google_play_services_version" />
+116-->[com.google.android.gms:play-services-basement:18.4.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5568a35fadd1ad6d1c703f16a16e5540\transformed\jetified-play-services-basement-18.4.0\AndroidManifest.xml:6:66-119
+117
+118        <uses-library
+118-->[androidx.window:window:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5093ab42d2307deb2d7ac0b7f5718c38\transformed\jetified-window-1.2.0\AndroidManifest.xml:23:9-25:40
+119            android:name="androidx.window.extensions"
+119-->[androidx.window:window:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5093ab42d2307deb2d7ac0b7f5718c38\transformed\jetified-window-1.2.0\AndroidManifest.xml:24:13-54
+120            android:required="false" />
+120-->[androidx.window:window:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5093ab42d2307deb2d7ac0b7f5718c38\transformed\jetified-window-1.2.0\AndroidManifest.xml:25:13-37
+121        <uses-library
+121-->[androidx.window:window:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5093ab42d2307deb2d7ac0b7f5718c38\transformed\jetified-window-1.2.0\AndroidManifest.xml:26:9-28:40
+122            android:name="androidx.window.sidecar"
+122-->[androidx.window:window:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5093ab42d2307deb2d7ac0b7f5718c38\transformed\jetified-window-1.2.0\AndroidManifest.xml:27:13-51
+123            android:required="false" />
+123-->[androidx.window:window:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5093ab42d2307deb2d7ac0b7f5718c38\transformed\jetified-window-1.2.0\AndroidManifest.xml:28:13-37
+124
+125        <provider
+125-->[androidx.emoji2:emoji2:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\d221757f531c672c2df2db4ebaa2cbf1\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+126            android:name="androidx.startup.InitializationProvider"
+126-->[androidx.emoji2:emoji2:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\d221757f531c672c2df2db4ebaa2cbf1\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:25:13-67
+127            android:authorities="com.example.attendance_mobile_temp.androidx-startup"
+127-->[androidx.emoji2:emoji2:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\d221757f531c672c2df2db4ebaa2cbf1\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:26:13-68
+128            android:exported="false" >
+128-->[androidx.emoji2:emoji2:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\d221757f531c672c2df2db4ebaa2cbf1\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:27:13-37
+129            <meta-data
+129-->[androidx.emoji2:emoji2:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\d221757f531c672c2df2db4ebaa2cbf1\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+130                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+130-->[androidx.emoji2:emoji2:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\d221757f531c672c2df2db4ebaa2cbf1\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
+131                android:value="androidx.startup" />
+131-->[androidx.emoji2:emoji2:1.2.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\d221757f531c672c2df2db4ebaa2cbf1\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
+132            <meta-data
+132-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\e80aa748ff6540407d8dba61c0d945fe\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
+133                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+133-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\e80aa748ff6540407d8dba61c0d945fe\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
+134                android:value="androidx.startup" />
+134-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\e80aa748ff6540407d8dba61c0d945fe\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
+135            <meta-data
+135-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+136                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+136-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+137                android:value="androidx.startup" />
+137-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+138        </provider>
+139
+140        <receiver
+140-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+141            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+141-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+142            android:directBootAware="false"
+142-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+143            android:enabled="true"
+143-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+144            android:exported="true"
+144-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+145            android:permission="android.permission.DUMP" >
+145-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+146            <intent-filter>
+146-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+147                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+147-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+147-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+148            </intent-filter>
+149            <intent-filter>
+149-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+150                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+150-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+150-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+151            </intent-filter>
+152            <intent-filter>
+152-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+153                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+153-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+153-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+154            </intent-filter>
+155            <intent-filter>
+155-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+156                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+156-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+156-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\5f7dcf6815bacc3ae7f099ba801348de\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+157            </intent-filter>
+158        </receiver>
+159
+160        <service
+160-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\3fe589753a4aba9a36c72c795b877407\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:29:9-35:19
+161            android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+161-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\3fe589753a4aba9a36c72c795b877407\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:30:13-103
+162            android:exported="false" >
+162-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\3fe589753a4aba9a36c72c795b877407\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:31:13-37
+163            <meta-data
+163-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\3fe589753a4aba9a36c72c795b877407\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:32:13-34:39
+164                android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
+164-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\3fe589753a4aba9a36c72c795b877407\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:33:17-94
+165                android:value="cct" />
+165-->[com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\3fe589753a4aba9a36c72c795b877407\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:34:17-36
+166        </service>
+167        <service
+167-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\9fb76887d9728a5f4c19fa6f805116ec\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:26:9-30:19
+168            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+168-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\9fb76887d9728a5f4c19fa6f805116ec\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:27:13-117
+169            android:exported="false"
+169-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\9fb76887d9728a5f4c19fa6f805116ec\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:28:13-37
+170            android:permission="android.permission.BIND_JOB_SERVICE" >
+170-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\9fb76887d9728a5f4c19fa6f805116ec\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:29:13-69
+171        </service>
+172
+173        <receiver
+173-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\9fb76887d9728a5f4c19fa6f805116ec\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:32:9-34:40
+174            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+174-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\9fb76887d9728a5f4c19fa6f805116ec\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:33:13-132
+175            android:exported="false" />
+175-->[com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\LOQ LENOVO\.gradle\caches\8.10.2\transforms\9fb76887d9728a5f4c19fa6f805116ec\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:34:13-37
+176    </application>
+177
+178</manifest>
