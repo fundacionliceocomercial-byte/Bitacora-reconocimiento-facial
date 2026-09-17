@@ -72,8 +72,5 @@ class AttendanceLogSerializer(serializers.ModelSerializer):
 
 
 class FacialCheckInSerializer(serializers.Serializer):
-    """Payload que envían React/Flutter para marcar entrada o salida con foto en vivo."""
+    """Payload que envían React/Flutter: solo la foto. El tipo (ENTRADA/SALIDA) lo determina el backend automáticamente."""
     photo = serializers.ImageField()
-    log_type = serializers.ChoiceField(
-        choices=AttendanceLog.Tipo.choices
-    )

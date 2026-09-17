@@ -10,6 +10,10 @@ import 'login_screen.dart';
 
 enum _ScanState { starting, scanning, capturing, cooldown, error }
 
+const _navy = Color(0xFF0B1220);
+const _navyLight = Color(0xFF111C33);
+const _brand = Color(0xFF0F6E56);
+
 class CheckInScreen extends StatefulWidget {
   const CheckInScreen({super.key});
 
@@ -23,7 +27,6 @@ class _CheckInScreenState extends State<CheckInScreen> with WidgetsBindingObserv
 
   CameraController? _controller;
   _ScanState _state = _ScanState.starting;
-  String _logType = 'ENTRADA';
 
   bool _isProcessingFrame = false;
   int _consecutiveGoodFrames = 0;
@@ -137,12 +140,13 @@ class _CheckInScreenState extends State<CheckInScreen> with WidgetsBindingObserv
     try {
       await controller.stopImageStream();
       final photo = await controller.takePicture();
-      final result = await _api.facialCheckIn(File(photo.path), _logType);
+      final result = await _api.facialCheckIn(File(photo.path));
 
       HapticFeedback.mediumImpact();
       setState(() {
         _resultSuccess = true;
-        _resultMessage = '${result.employeeName} — ${result.logType} registrada correctamente.';
+        final accion = result.logType == 'ENTRADA' ? 'Entrada' : 'Salida';
+        _resultMessage = '$accion registrada — ${result.employeeName}';
       });
     } catch (e) {
       HapticFeedback.vibrate();
@@ -185,266 +189,191 @@ class _CheckInScreenState extends State<CheckInScreen> with WidgetsBindingObserv
     }
   }
 
-  Color get _accentColor {
+  Color get _statusColor {
     switch (_visualState) {
       case ScanVisualState.success:
-        return const Color(0xFF34D399);
+        return const Color(0xFF16A34A);
       case ScanVisualState.error:
-        return const Color(0xFFF87171);
+        return const Color(0xFFDC2626);
       case ScanVisualState.capturing:
-        return const Color(0xFFFBBF24);
+        return const Color(0xFFD97706);
       case ScanVisualState.scanning:
-        return const Color(0xFF22D3EE);
+        return _brand;
       case ScanVisualState.idle:
-        return const Color(0xFF818CF8);
+        return Colors.white38;
     }
   }
 
   String _statusLabel() {
     switch (_state) {
       case _ScanState.starting:
-        return 'Iniciando cámara...';
+        return 'INICIANDO CÁMARA';
       case _ScanState.scanning:
-        return 'Ubícate frente a la cámara';
+        return 'ESCANEANDO';
       case _ScanState.capturing:
-        return 'Verificando rostro...';
+        return 'VERIFICANDO';
       case _ScanState.cooldown:
-        return _resultSuccess ? '¡Listo!' : 'No se pudo verificar';
+        return _resultSuccess ? 'REGISTRO EXITOSO' : 'NO VERIFICADO';
       case _ScanState.error:
-        return 'Ocurrió un problema';
+        return 'ERROR';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
-    final accent = _accentColor;
 
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Fondo con gradiente vibrante
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF1E1B4B), Color(0xFF0F172A), Color(0xFF042F2E)],
-                stops: [0.0, 0.55, 1.0],
+      backgroundColor: _navy,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Encabezado institucional
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Color(0xFF1E2A44), width: 1)),
               ),
-            ),
-          ),
-
-          // Manchas de color difuminadas, decorativas
-          Positioned(
-            top: -80,
-            left: -60,
-            child: _glowBlob(const Color(0xFF6366F1), 220),
-          ),
-          Positioned(
-            bottom: -100,
-            right: -80,
-            child: _glowBlob(const Color(0xFF0EA5A4), 260),
-          ),
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 500),
-            top: 140,
-            right: -40,
-            child: _glowBlob(accent, 160, opacity: 0.35),
-          ),
-
-          SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(colors: [Color(0xFF22D3EE), Color(0xFF6366F1)]),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.face_retouching_natural, color: Colors.white, size: 20),
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Bitácora de Personal',
-                          style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: _cerrarSesion,
-                        icon: const Icon(Icons.logout_rounded, color: Colors.white70),
-                        tooltip: 'Cerrar sesión',
-                      ),
-                    ],
-                  ),
-                ),
-
-                Expanded(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: AspectRatio(
-                        aspectRatio: 3 / 4,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Tarjeta con brillo alrededor de la cámara
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 400),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(32),
-                                boxShadow: [
-                                  BoxShadow(color: accent.withOpacity(0.45), blurRadius: 40, spreadRadius: 2),
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(32),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [accent.withOpacity(0.7), Colors.white.withOpacity(0.15)],
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.all(2.5),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(30),
-                                    child: controller != null && controller.value.isInitialized
-                                        ? CameraPreview(controller)
-                                        : Container(
-                                            color: const Color(0xFF0F172A),
-                                            child: const Center(
-                                              child: CircularProgressIndicator(color: Colors.white70),
-                                            ),
-                                          ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // Marco de escaneo animado, centrado sobre la cámara
-                            const Positioned.fill(child: SizedBox()),
-                            Center(child: ScanOverlay(state: _visualState)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: Container(
-                    key: ValueKey(_statusLabel()),
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [accent.withOpacity(0.9), accent.withOpacity(0.6)]),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: accent.withOpacity(0.4), blurRadius: 16, spreadRadius: 1)],
+                      color: _brand,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
-                      _statusLabel(),
-                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                    child: const Icon(Icons.badge_outlined, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CONTROL DE ACCESO',
+                          style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1.1),
+                        ),
+                        Text(
+                          'Sistema de bitácora de personal',
+                          style: TextStyle(color: Colors.white38, fontSize: 11),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                if (_resultMessage != null) ...[
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      _resultMessage!,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: _resultSuccess ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                  IconButton(
+                    onPressed: _cerrarSesion,
+                    icon: const Icon(Icons.logout_outlined, color: Colors.white54, size: 20),
+                    tooltip: 'Cerrar sesión',
                   ),
                 ],
-
-                const SizedBox(height: 20),
-
-                // Panel inferior con el selector Entrada/Salida
-                Container(
-                  margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.25), blurRadius: 20, offset: const Offset(0, 8)),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      _modeButton('Entrada', Icons.login_rounded, 'ENTRADA'),
-                      _modeButton('Salida', Icons.logout_rounded, 'SALIDA'),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _glowBlob(Color color, double size, {double opacity = 0.45}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [color.withOpacity(opacity), color.withOpacity(0)],
-        ),
-      ),
-    );
-  }
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Tarjeta de la cámara
+                    Container(
+                      width: 280,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: _navyLight,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF1E2A44)),
+                      ),
+                      child: Column(
+                        children: [
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: SizedBox(
+                                  width: 250,
+                                  height: 320,
+                                  child: controller != null && controller.value.isInitialized
+                                      ? CameraPreview(controller)
+                                      : Container(
+                                          color: Colors.black,
+                                          child: const Center(
+                                            child: CircularProgressIndicator(color: Colors.white38, strokeWidth: 2),
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              ScanOverlay(state: _visualState),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
 
-  Widget _modeButton(String label, IconData icon, String value) {
-    final selected = _logType == value;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _logType = value),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 13),
-          decoration: BoxDecoration(
-            gradient: selected
-                ? const LinearGradient(colors: [Color(0xFF22D3EE), Color(0xFF6366F1)])
-                : null,
-            color: selected ? null : Colors.transparent,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: selected
-                ? [BoxShadow(color: const Color(0xFF6366F1).withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: selected ? Colors.white : const Color(0xFF64748B), size: 20),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: selected ? Colors.white : const Color(0xFF64748B),
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                          // Etiqueta de estado, tipo badge institucional
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: Container(
+                              key: ValueKey(_statusLabel()),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: _statusColor.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: _statusColor.withOpacity(0.4)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(color: _statusColor, shape: BoxShape.circle),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _statusLabel(),
+                                    style: TextStyle(
+                                      color: _statusColor,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    if (_resultMessage != null) ...[
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Text(
+                          _resultMessage!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: _resultSuccess ? Colors.white70 : const Color(0xFFFCA5A5),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // Pie institucional
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Text(
+                'El sistema detecta automáticamente ENTRADA o SALIDA',
+                style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 11),
+              ),
+            ),
+          ],
         ),
       ),
     );

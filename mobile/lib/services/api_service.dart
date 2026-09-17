@@ -69,9 +69,10 @@ class ApiService {
     return true;
   }
 
-  /// Envía la foto capturada y el tipo de marcación (ENTRADA/SALIDA).
+  /// Envía la foto capturada. El backend determina automáticamente si es
+  /// ENTRADA o SALIDA según el último registro del empleado.
   /// Reintenta una vez si el token de acceso expiró.
-  Future<CheckInResult> facialCheckIn(File photo, String logType, {bool retry = true}) async {
+  Future<CheckInResult> facialCheckIn(File photo, {bool retry = true}) async {
     final apiUrl = await AppConfig.getApiUrl();
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(_keyAccess);
@@ -79,7 +80,6 @@ class ApiService {
 
     final request = http.MultipartRequest('POST', Uri.parse('$apiUrl/attendance/facial-checkin/'))
       ..headers['Authorization'] = 'Bearer $token'
-      ..fields['log_type'] = logType
       ..files.add(await http.MultipartFile.fromPath('photo', photo.path));
 
     final streamed = await request.send();
@@ -87,7 +87,7 @@ class ApiService {
 
     if (res.statusCode == 401 && retry) {
       final refreshed = await _refreshToken();
-      if (refreshed) return facialCheckIn(photo, logType, retry: false);
+      if (refreshed) return facialCheckIn(photo, retry: false);
       throw ApiException('La sesión expiró. Vuelve a iniciar sesión.');
     }
 
