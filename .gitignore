@@ -1,0 +1,62 @@
+# =========================
+# Python / Django
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+*.env
+
+# SQLite
+*.sqlite3
+
+# Django media/uploads
+backend/media/
+
+
+# =========================
+# React / Vite
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+
+# =========================
+# Flutter
+# =========================
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+
+# Android / Gradle
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/**/build/
+mobile/android/app/.cxx/
+
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
