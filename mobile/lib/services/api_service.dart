@@ -12,10 +12,16 @@ class ApiException implements Exception {
 }
 
 class CheckInResult {
+  final int logId;
   final String message;
   final String employeeName;
   final String logType;
-  CheckInResult({required this.message, required this.employeeName, required this.logType});
+  CheckInResult({
+    required this.logId,
+    required this.message,
+    required this.employeeName,
+    required this.logType,
+  });
 }
 
 class ApiService {
@@ -70,7 +76,8 @@ class ApiService {
   }
 
   /// Envía la foto capturada. El backend determina automáticamente si es
-  /// ENTRADA o SALIDA según el último registro del empleado.
+  /// ENTRADA o SALIDA según el último registro del empleado, y rechaza la
+  /// marcación (429) si todavía está dentro del período de cooldown.
   /// Reintenta una vez si el token de acceso expiró.
   Future<CheckInResult> facialCheckIn(File photo, {bool retry = true}) async {
     final apiUrl = await AppConfig.getApiUrl();
@@ -95,13 +102,43 @@ class ApiService {
 
     if (res.statusCode == 201) {
       return CheckInResult(
+        logId: data['log']['id'],
         message: data['detail'],
         employeeName: data['log']['employee_name'],
         logType: data['log']['log_type'],
       );
     }
 
-    // 400: sin rostro / varios rostros. 404: no reconocido.
+    // 400: sin rostro / varios rostros. 404: no reconocido. 429: cooldown.
     throw ApiException(data['detail'] ?? 'No se pudo registrar la marcación.');
+  }
+
+  /// Guarda (o reemplaza) la observación de un registro puntual.
+  /// Se usa justo después de un check-in exitoso, desde el botón
+  /// "Agregar observación".
+  Future<void> addNote(int logId, String notes, {bool retry = true}) async {
+    final apiUrl = await AppConfig.getApiUrl();
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(_keyAccess);
+    if (token == null) throw ApiException('No hay sesión activa.');
+
+    final res = await http.patch(
+      Uri.parse('$apiUrl/attendance/$logId/notes/'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'notes': notes}),
+    );
+
+    if (res.statusCode == 401 && retry) {
+      final refreshed = await _refreshToken();
+      if (refreshed) return addNote(logId, notes, retry: false);
+      throw ApiException('La sesión expiró. Vuelve a iniciar sesión.');
+    }
+
+    if (res.statusCode != 200) {
+      throw ApiException('No se pudo guardar la observación.');
+    }
   }
 }

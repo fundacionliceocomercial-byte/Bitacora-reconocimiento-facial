@@ -31,9 +31,12 @@ class _CheckInScreenState extends State<CheckInScreen> with WidgetsBindingObserv
   bool _isProcessingFrame = false;
   int _consecutiveGoodFrames = 0;
   static const _framesNeededToCapture = 4;
+  static const _cooldownDuration = Duration(seconds: 3);
 
   String? _resultMessage;
   bool _resultSuccess = false;
+  int? _lastLogId;
+  bool _noteSaved = false;
   Timer? _cooldownTimer;
 
   @override
@@ -100,6 +103,8 @@ class _CheckInScreenState extends State<CheckInScreen> with WidgetsBindingObserv
     setState(() {
       _state = _ScanState.scanning;
       _resultMessage = null;
+      _lastLogId = null;
+      _noteSaved = false;
       _consecutiveGoodFrames = 0;
     });
 
@@ -145,6 +150,7 @@ class _CheckInScreenState extends State<CheckInScreen> with WidgetsBindingObserv
       HapticFeedback.mediumImpact();
       setState(() {
         _resultSuccess = true;
+        _lastLogId = result.logId;
         final accion = result.logType == 'ENTRADA' ? 'Entrada' : 'Salida';
         _resultMessage = '$accion registrada — ${result.employeeName}';
       });
@@ -152,6 +158,7 @@ class _CheckInScreenState extends State<CheckInScreen> with WidgetsBindingObserv
       HapticFeedback.vibrate();
       setState(() {
         _resultSuccess = false;
+        _lastLogId = null;
         _resultMessage = e.toString().replaceFirst('ApiException: ', '');
       });
     }
@@ -162,10 +169,92 @@ class _CheckInScreenState extends State<CheckInScreen> with WidgetsBindingObserv
   void _enterCooldown() {
     setState(() => _state = _ScanState.cooldown);
     _cooldownTimer?.cancel();
-    _cooldownTimer = Timer(const Duration(seconds: 3), () {
+    _cooldownTimer = Timer(_cooldownDuration, () {
       if (!mounted) return;
       _startScanning();
     });
+  }
+
+  /// Pausa el regreso automático al escaneo mientras el diálogo de
+  /// observación está abierto, para que no se reinicie la cámara
+  /// de golpe mientras el empleado está escribiendo.
+  void _pauseAutoReset() {
+    _cooldownTimer?.cancel();
+  }
+
+  void _resumeAutoReset() {
+    if (!mounted || _state != _ScanState.cooldown) return;
+    _cooldownTimer?.cancel();
+    _cooldownTimer = Timer(_cooldownDuration, () {
+      if (!mounted) return;
+      _startScanning();
+    });
+  }
+
+  Future<void> _openAddNoteDialog() async {
+    final logId = _lastLogId;
+    if (logId == null) return;
+
+    _pauseAutoReset();
+    final controller = TextEditingController();
+
+    final saved = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: _navyLight,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Text('Agregar observación', style: TextStyle(color: Colors.white, fontSize: 16)),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            maxLength: 255,
+            maxLines: 3,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Ej: Llegué tarde por una cita médica',
+              hintStyle: const TextStyle(color: Colors.white38),
+              counterStyle: const TextStyle(color: Colors.white38),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF1E2A44)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _brand),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar', style: TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: _brand),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (saved == true && controller.text.trim().isNotEmpty) {
+      try {
+        await _api.addNote(logId, controller.text.trim());
+        if (mounted) setState(() => _noteSaved = true);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString().replaceFirst('ApiException: ', ''))),
+          );
+        }
+      }
+    }
+
+    _resumeAutoReset();
   }
 
   Future<void> _cerrarSesion() async {
@@ -222,6 +311,7 @@ class _CheckInScreenState extends State<CheckInScreen> with WidgetsBindingObserv
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    final showAddNoteButton = _state == _ScanState.cooldown && _resultSuccess && _lastLogId != null;
 
     return Scaffold(
       backgroundColor: _navy,
@@ -359,6 +449,30 @@ class _CheckInScreenState extends State<CheckInScreen> with WidgetsBindingObserv
                           ),
                         ),
                       ),
+                    ],
+
+                    if (showAddNoteButton) ...[
+                      const SizedBox(height: 12),
+                      _noteSaved
+                          ? const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.check_circle_outline, color: Color(0xFF16A34A), size: 16),
+                                SizedBox(width: 6),
+                                Text('Observación guardada', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                              ],
+                            )
+                          : OutlinedButton.icon(
+                              onPressed: _openAddNoteDialog,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white70,
+                                side: const BorderSide(color: Color(0xFF1E2A44)),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              icon: const Icon(Icons.edit_note, size: 18),
+                              label: const Text('Agregar observación', style: TextStyle(fontSize: 13)),
+                            ),
                     ],
                   ],
                 ),

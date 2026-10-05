@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import viewsets, status, filters
@@ -23,6 +24,14 @@ from .services.facial_recognition import (
     MultipleFacesDetectedError,
 )
 from .services.export import build_monthly_excel, build_monthly_pdf
+
+
+def _format_remaining(seconds):
+    seconds = max(int(seconds), 0)
+    minutes, secs = divmod(seconds, 60)
+    if minutes > 0:
+        return f"{minutes} min {secs} seg" if secs else f"{minutes} min"
+    return f"{secs} seg"
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -67,6 +76,7 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Consulta de la bitácora (solo lectura vía API general; los registros
     se crean únicamente a través del endpoint de check-in facial o manual).
+    La única escritura permitida aquí es la observación (ver update_notes).
     """
 
     queryset = AttendanceLog.objects.select_related("employee").all()
@@ -124,6 +134,7 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
                     "salida_method": None,
                     "salida_confidence": None,
                     "salida_log_id": None,
+                    "notes": "",
                 }
 
             row = grouped[key]
@@ -138,9 +149,13 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
                 row["salida_confidence"] = log.match_confidence
                 row["salida_log_id"] = log.id
 
+            # Si cualquiera de los dos registros del día trae observación,
+            # se muestra (lo normal es que la deje el empleado en uno solo).
+            if log.notes:
+                row["notes"] = log.notes
+
         def sort_key(row):
             row_date = date.fromisoformat(row["date"])
-            # Sin entrada registrada: se manda al final del grupo del día.
             entrada_key = -row["entrada_time"].timestamp() if row["entrada_time"] else float("inf")
             return (-row_date.toordinal(), entrada_key)
 
@@ -171,6 +186,20 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
             }
         )
 
+    @action(detail=True, methods=["patch"], url_path="notes")
+    def update_notes(self, request, pk=None):
+        """
+        Actualiza únicamente la observación de un registro puntual.
+        Lo usa tanto la app móvil (justo después de marcar) como la
+        bitácora web (al editar la columna de Observaciones).
+        PATCH /api/attendance/{id}/notes/  body: {"notes": "..."}
+        """
+        log = self.get_object()
+        serializer = self.get_serializer(log, data={"notes": request.data.get("notes", "")}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
     @action(detail=False, methods=["post"], url_path="facial-checkin")
     def facial_checkin(self, request):
         """
@@ -178,6 +207,11 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
         o la web (React), identifica al empleado por su rostro y determina
         automáticamente si le corresponde ENTRADA o SALIDA según su último
         registro (sin que el usuario tenga que elegir nada).
+
+        Antes de crear el registro, aplica un cooldown: si el empleado ya
+        marcó hace menos de CHECKIN_COOLDOWN_MINUTES, se rechaza para
+        evitar una doble marcación accidental (ej. quedarse frente a la
+        cámara y que detecte el rostro dos veces).
         """
         serializer = FacialCheckInSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -197,6 +231,20 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
         last_log = match.employee.last_attendance_log
+
+        if last_log is not None:
+            elapsed = (timezone.now() - last_log.timestamp).total_seconds()
+            cooldown_seconds = settings.CHECKIN_COOLDOWN_MINUTES * 60
+            if elapsed < cooldown_seconds:
+                remaining = _format_remaining(cooldown_seconds - elapsed)
+                return Response(
+                    {
+                        "detail": f"Ya registraste tu marcación hace instantes. "
+                                  f"Espera {remaining} para volver a marcar.",
+                    },
+                    status=status.HTTP_429_TOO_MANY_REQUESTS,
+                )
+
         log_type = (
             AttendanceLog.Tipo.ENTRADA
             if last_log is None or last_log.log_type == AttendanceLog.Tipo.SALIDA

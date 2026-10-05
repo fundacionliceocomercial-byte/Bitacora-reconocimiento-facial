@@ -131,3 +131,9 @@ CORS_ALLOWED_ORIGINS = config(
 # Configuración específica de reconocimiento facial
 # ---------------------------------------------------------------------------
 FACE_MATCH_TOLERANCE = config("FACE_MATCH_TOLERANCE", default=0.5, cast=float)
+
+
+# ---------------------------------------------------------------------------
+# Cooldown anti-doble-marcación
+# ---------------------------------------------------------------------------
+CHECKIN_COOLDOWN_MINUTES = config("CHECKIN_COOLDOWN_MINUTES", default=5, cast=int)
