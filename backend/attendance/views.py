@@ -91,12 +91,14 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
         """
         Bitácora mensual: /api/attendance/monthly/?year=2026&month=9
         Opcional: &day=2026-09-30 (filtra a un solo día dentro del mes)
+        Opcional: &sede=CENTRO|NORTE (filtra por sede del empleado)
         Opcional: &page=1&page_size=31 (paginación manual)
 
         Devuelve 1 registro por empleado/día, combinando su ENTRADA y
-        SALIDA de esa fecha en la misma fila. Orden: fecha descendente
-        (más reciente primero), y dentro de un mismo día, por hora de
-        entrada descendente (quien llegó más tarde, arriba).
+        SALIDA de esa fecha en la misma fila, más la sede y la
+        observación. Orden: fecha descendente (más reciente primero),
+        y dentro de un mismo día, por hora de entrada descendente
+        (quien llegó más tarde, arriba).
         """
         today = timezone.now()
         year = int(request.query_params.get("year", today.year))
@@ -114,6 +116,10 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
         if day_param:
             logs = logs.filter(timestamp__date=day_param)
 
+        sede_param = request.query_params.get("sede")
+        if sede_param:
+            logs = logs.filter(employee__sede=sede_param)
+
         logs = logs.order_by("employee_id", "timestamp")
 
         grouped = {}
@@ -125,6 +131,7 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
                 grouped[key] = {
                     "employee": log.employee_id,
                     "employee_name": log.employee.full_name,
+                    "sede": log.employee.sede,
                     "date": local_day.isoformat(),
                     "entrada_time": None,
                     "entrada_method": None,
@@ -135,6 +142,7 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
                     "salida_confidence": None,
                     "salida_log_id": None,
                     "notes": "",
+                    "notes_log_id": None,
                 }
 
             row = grouped[key]
@@ -150,9 +158,11 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
                 row["salida_log_id"] = log.id
 
             # Si cualquiera de los dos registros del día trae observación,
-            # se muestra (lo normal es que la deje el empleado en uno solo).
+            # se muestra, y se guarda el id de ESE log puntual, porque es
+            # contra ese id que hay que hacer el PATCH al editar desde la web.
             if log.notes:
                 row["notes"] = log.notes
+                row["notes_log_id"] = log.id
 
         def sort_key(row):
             row_date = date.fromisoformat(row["date"])
@@ -178,6 +188,7 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
                 "year": year,
                 "month": month,
                 "day": day_param,
+                "sede": sede_param,
                 "count": total_count,
                 "page": page,
                 "page_size": page_size,
@@ -210,8 +221,7 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
 
         Antes de crear el registro, aplica un cooldown: si el empleado ya
         marcó hace menos de CHECKIN_COOLDOWN_MINUTES, se rechaza para
-        evitar una doble marcación accidental (ej. quedarse frente a la
-        cámara y que detecte el rostro dos veces).
+        evitar una doble marcación accidental.
         """
         serializer = FacialCheckInSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

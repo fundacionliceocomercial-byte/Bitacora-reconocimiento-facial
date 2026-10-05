@@ -94,12 +94,15 @@ export const api = {
   },
 
   // Bitácora
-  getMonthlyLogs: (year, month, { employeeId = "", day = "", page = 1, pageSize = 20 } = {}) => {
+  getMonthlyLogs: (year, month, { employeeId = "", day = "", sede = "", page = 1, pageSize = 20 } = {}) => {
     const params = new URLSearchParams({ year, month, page, page_size: pageSize });
     if (employeeId) params.append("employee", employeeId);
     if (day) params.append("day", day);
+    if (sede) params.append("sede", sede);
     return apiRequest(`/attendance/monthly/?${params.toString()}`);
   },
+  updateLogNotes: (logId, notes) =>
+    apiRequest(`/attendance/${logId}/notes/`, { method: "PATCH", body: { notes } }),
 
   exportMonthlyLogs: async (year, month, format, employeeId = "") => {
     const blob = await apiRequest(
