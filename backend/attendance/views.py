@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import viewsets, status, filters
@@ -78,7 +80,13 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
     def monthly(self, request):
         """
         Bitácora mensual: /api/attendance/monthly/?year=2026&month=9
-        Reemplaza la planilla de Excel tradicional.
+        Opcional: &day=2026-09-30 (filtra a un solo día dentro del mes)
+        Opcional: &page=1&page_size=31 (paginación manual)
+
+        Devuelve 1 registro por empleado/día, combinando su ENTRADA y
+        SALIDA de esa fecha en la misma fila. Orden: fecha descendente
+        (más reciente primero), y dentro de un mismo día, por hora de
+        entrada descendente (quien llegó más tarde, arriba).
         """
         today = timezone.now()
         year = int(request.query_params.get("year", today.year))
@@ -87,12 +95,81 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
         logs = self.get_queryset().filter(
             timestamp__year=year, timestamp__month=month
         )
+
         employee_id = request.query_params.get("employee")
         if employee_id:
             logs = logs.filter(employee_id=employee_id)
 
-        serializer = self.get_serializer(logs, many=True)
-        return Response({"year": year, "month": month, "count": logs.count(), "results": serializer.data})
+        day_param = request.query_params.get("day")
+        if day_param:
+            logs = logs.filter(timestamp__date=day_param)
+
+        logs = logs.order_by("employee_id", "timestamp")
+
+        grouped = {}
+        for log in logs:
+            local_day = timezone.localtime(log.timestamp).date()
+            key = (log.employee_id, local_day)
+
+            if key not in grouped:
+                grouped[key] = {
+                    "employee": log.employee_id,
+                    "employee_name": log.employee.full_name,
+                    "date": local_day.isoformat(),
+                    "entrada_time": None,
+                    "entrada_method": None,
+                    "entrada_confidence": None,
+                    "entrada_log_id": None,
+                    "salida_time": None,
+                    "salida_method": None,
+                    "salida_confidence": None,
+                    "salida_log_id": None,
+                }
+
+            row = grouped[key]
+            if log.log_type == AttendanceLog.Tipo.ENTRADA:
+                row["entrada_time"] = log.timestamp
+                row["entrada_method"] = log.method
+                row["entrada_confidence"] = log.match_confidence
+                row["entrada_log_id"] = log.id
+            else:
+                row["salida_time"] = log.timestamp
+                row["salida_method"] = log.method
+                row["salida_confidence"] = log.match_confidence
+                row["salida_log_id"] = log.id
+
+        def sort_key(row):
+            row_date = date.fromisoformat(row["date"])
+            # Sin entrada registrada: se manda al final del grupo del día.
+            entrada_key = -row["entrada_time"].timestamp() if row["entrada_time"] else float("inf")
+            return (-row_date.toordinal(), entrada_key)
+
+        all_results = sorted(grouped.values(), key=sort_key)
+
+        total_count = len(all_results)
+
+        try:
+            page = max(int(request.query_params.get("page", 1)), 1)
+            page_size = max(int(request.query_params.get("page_size", 31)), 1)
+        except ValueError:
+            page, page_size = 1, 31
+
+        start = (page - 1) * page_size
+        end = start + page_size
+        page_results = all_results[start:end]
+
+        return Response(
+            {
+                "year": year,
+                "month": month,
+                "day": day_param,
+                "count": total_count,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": (total_count + page_size - 1) // page_size if page_size else 1,
+                "results": page_results,
+            }
+        )
 
     @action(detail=False, methods=["post"], url_path="facial-checkin")
     def facial_checkin(self, request):

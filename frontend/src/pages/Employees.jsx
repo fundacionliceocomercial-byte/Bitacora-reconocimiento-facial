@@ -17,6 +17,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
 const emptyForm = {
   document_id: "",
   first_name: "",
@@ -25,6 +27,10 @@ const emptyForm = {
   position: "",
   department: "",
   sede: "CENTRO",
+  blood_type: "",
+  phone: "",
+  emergency_contact_phone: "",
+  emergency_contact_relationship: "",
 };
 
 export default function Employees() {
@@ -132,6 +138,10 @@ export default function Employees() {
       position: employee.position || "",
       department: employee.department || "",
       sede: employee.sede || "CENTRO",
+      blood_type: employee.blood_type || "",
+      phone: employee.phone || "",
+      emergency_contact_phone: employee.emergency_contact_phone || "",
+      emergency_contact_relationship: employee.emergency_contact_relationship || "",
     });
 
     setShowForm(true);
@@ -374,6 +384,9 @@ export default function Employees() {
               ["email", "Correo (opcional)"],
               ["position", "Cargo"],
               ["department", "Área"],
+              ["phone", "Teléfono"],
+              ["emergency_contact_phone", "Teléfono de contacto de emergencia"],
+              ["emergency_contact_relationship", "Parentesco del contacto de emergencia"],
             ].map(([key, label]) => (
               <div key={key}>
                 <label className="block text-sm font-medium text-gray-600 mb-1.5">
@@ -453,6 +466,44 @@ export default function Employees() {
                 <option value="NORTE">
                   Norte
                 </option>
+              </select>
+            </div>
+
+            {/* RH / Grupo sanguíneo */}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                RH / Grupo sanguíneo
+              </label>
+
+              <select
+                className="
+                  w-full
+                  px-3 py-2.5
+                  border border-gray-300
+                  rounded-lg
+                  text-sm
+                  text-gray-700
+                  bg-white
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-brand-500
+                  focus:border-brand-500
+                "
+                value={form.blood_type}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    blood_type: e.target.value,
+                  })
+                }
+              >
+                <option value="">Sin especificar</option>
+                {BLOOD_TYPES.map((bt) => (
+                  <option key={bt} value={bt}>
+                    {bt}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

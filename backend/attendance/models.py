@@ -13,6 +13,16 @@ class Employee(models.Model):
         CENTRO = "CENTRO", "Centro"
         NORTE = "NORTE", "Norte"
 
+    class GrupoSanguineo(models.TextChoices):
+        A_POS = "A+", "A+"
+        A_NEG = "A-", "A-"
+        B_POS = "B+", "B+"
+        B_NEG = "B-", "B-"
+        AB_POS = "AB+", "AB+"
+        AB_NEG = "AB-", "AB-"
+        O_POS = "O+", "O+"
+        O_NEG = "O-", "O-"
+
     document_id = models.CharField("Cédula / Documento", max_length=30, unique=True)
     first_name = models.CharField("Nombres", max_length=100)
     last_name = models.CharField("Apellidos", max_length=100)
@@ -31,6 +41,21 @@ class Employee(models.Model):
         max_length=10,
         choices=Estado.choices,
         default=Estado.ACTIVO,
+    )
+
+    # --- Datos personales / de emergencia ---
+    blood_type = models.CharField(
+        "RH / Grupo sanguíneo",
+        max_length=3,
+        choices=GrupoSanguineo.choices,
+        blank=True,
+    )
+    phone = models.CharField("Teléfono", max_length=20, blank=True)
+    emergency_contact_phone = models.CharField(
+        "Teléfono de contacto de emergencia", max_length=20, blank=True
+    )
+    emergency_contact_relationship = models.CharField(
+        "Parentesco del contacto de emergencia", max_length=50, blank=True
     )
 
     # Foto de referencia usada para generar el encoding
