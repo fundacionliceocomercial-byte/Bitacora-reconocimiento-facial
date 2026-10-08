@@ -131,8 +131,13 @@ export default function Attendance() {
 
   const handleExport = async (format) => {
     setStatus(`Generando ${format.toUpperCase()}...`);
+
     try {
-      await api.exportMonthlyLogs(year, month, format);
+      await api.exportMonthlyLogs(year, month, format, {
+        day,
+        sede,
+      });
+
       setStatus("");
     } catch (err) {
       setStatus(err.message);

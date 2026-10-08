@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -281,38 +281,152 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ExportMonthlyAttendanceView(APIView):
     """
-    Vista independiente (no un @action del router) para evitar cualquier
-    ambigüedad de enrutamiento con la ruta de detalle /attendance/{id}/.
-    GET /api/attendance/export-monthly/?year=2026&month=9&format=xlsx
+    Exporta la bitácora mensual en Excel o PDF.
+
+    GET:
+    /api/attendance/export-monthly/?year=2026&month=9&file_format=xlsx
     """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         today = timezone.now()
-        year = int(request.query_params.get("year", today.year))
-        month = int(request.query_params.get("month", today.month))
-        file_format = request.query_params.get("format", "xlsx").lower()
+
+        try:
+            year = int(request.query_params.get("year", today.year))
+            month = int(request.query_params.get("month", today.month))
+        except (TypeError, ValueError):
+            return Response(
+                {"detail": "El año y el mes deben ser valores numéricos."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        file_format = request.query_params.get("file_format", "xlsx").lower()
+
+        if month < 1 or month > 12:
+            return Response(
+                {"detail": "El mes debe estar entre 1 y 12."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if file_format not in ("xlsx", "pdf"):
+            return Response(
+                {"detail": "El formato debe ser 'xlsx' o 'pdf'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         logs = AttendanceLog.objects.select_related("employee").filter(
-            timestamp__year=year, timestamp__month=month
+            timestamp__year=year,
+            timestamp__month=month,
         )
+
+        # ---------------------------------------------------------
+        # Filtro opcional por empleado
+        # ---------------------------------------------------------
+
         employee_id = request.query_params.get("employee")
+
         if employee_id:
             logs = logs.filter(employee_id=employee_id)
-        logs = logs.order_by("timestamp")
+
+        # ---------------------------------------------------------
+        # Filtro opcional por día
+        # ---------------------------------------------------------
+
+        day = request.query_params.get("day")
+
+        if day:
+            try:
+                selected_day = date.fromisoformat(day)
+            except ValueError:
+                return Response(
+                    {
+                        "detail": (
+                            "El día debe tener el formato "
+                            "YYYY-MM-DD."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # El día seleccionado debe pertenecer al año y mes
+            # que se están exportando.
+            if selected_day.year != year or selected_day.month != month:
+                return Response(
+                    {
+                        "detail": (
+                            "El día seleccionado no pertenece "
+                            "al año y mes de la exportación."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            logs = logs.filter(timestamp__date=selected_day)
+
+        # ---------------------------------------------------------
+        # Filtro opcional por sede
+        # ---------------------------------------------------------
+
+        sede = request.query_params.get("sede")
+
+        if sede:
+            sede = sede.upper()
+
+            if sede not in ("CENTRO", "NORTE"):
+                return Response(
+                    {
+                        "detail": (
+                            "La sede debe ser 'CENTRO' "
+                            "o 'NORTE'."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            logs = logs.filter(employee__sede=sede)
+
+        logs = logs.order_by(
+            "employee_id",
+            "timestamp",
+        )
 
         filename = f"bitacora_{year}_{month:02d}"
 
         if file_format == "pdf":
-            content = build_monthly_pdf(logs, year, month)
-            response = HttpResponse(content, content_type="application/pdf")
-            response["Content-Disposition"] = f'attachment; filename="{filename}.pdf"'
+            content = build_monthly_pdf(
+                logs,
+                year,
+                month,
+            )
+
+            response = HttpResponse(
+                content,
+                content_type="application/pdf",
+            )
+
+            response["Content-Disposition"] = (
+                f'attachment; filename="{filename}.pdf"'
+            )
+
             return response
 
-        content = build_monthly_excel(logs, year, month)
+        content = build_monthly_excel(
+            logs,
+            year,
+            month,
+        )
+
         response = HttpResponse(
             content,
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            content_type=(
+                "application/vnd.openxmlformats-officedocument."
+                "spreadsheetml.sheet"
+            ),
         )
-        response["Content-Disposition"] = f'attachment; filename="{filename}.xlsx"'
+
+        response["Content-Disposition"] = (
+            f'attachment; filename="{filename}.xlsx"'
+        )
+
         return response

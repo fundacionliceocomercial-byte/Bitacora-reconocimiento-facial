@@ -104,15 +104,34 @@ export const api = {
   updateLogNotes: (logId, notes) =>
     apiRequest(`/attendance/${logId}/notes/`, { method: "PATCH", body: { notes } }),
 
-  exportMonthlyLogs: async (year, month, format, employeeId = "") => {
+  exportMonthlyLogs: async (
+    year,
+    month,
+    format,
+    { employeeId = "", day = "", sede = "" } = {}
+  ) => {
+    const params = new URLSearchParams({
+      year,
+      month,
+      file_format: format,
+    });
+
+    if (employeeId) params.append("employee", employeeId);
+    if (day) params.append("day", day);
+    if (sede) params.append("sede", sede);
+
     const blob = await apiRequest(
-      `/attendance/export-monthly/?year=${year}&month=${month}&format=${format}${employeeId ? `&employee=${employeeId}` : ""}`
+      `/attendance/export-monthly/?${params.toString()}`
     );
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
+
     a.href = url;
     a.download = `bitacora_${year}_${String(month).padStart(2, "0")}.${format === "pdf" ? "pdf" : "xlsx"}`;
+
     a.click();
+
     URL.revokeObjectURL(url);
   },
 };
