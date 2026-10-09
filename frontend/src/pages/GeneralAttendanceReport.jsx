@@ -65,9 +65,7 @@ function MetricCard({ icon: Icon, title, value, description }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
-            {value ?? 0}
-          </p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{value ?? 0}</p>
           {description && (
             <p className="mt-1 text-xs text-gray-500">{description}</p>
           )}
@@ -102,13 +100,13 @@ export default function GeneralAttendanceReport() {
 
       const employeeList = Array.isArray(employeeData)
         ? employeeData
-        : employeeData?.results ?? [];
+        : (employeeData?.results ?? []);
 
       setEmployees(employeeList);
     } catch (err) {
       setError(
         err?.message ||
-          "No fue posible cargar el reporte general de asistencia."
+          "No fue posible cargar el reporte general de asistencia.",
       );
     } finally {
       setLoading(false);
@@ -178,9 +176,7 @@ export default function GeneralAttendanceReport() {
         >
           <div className="mb-4 flex items-center gap-2">
             <Search size={19} className="text-emerald-700" />
-            <h2 className="font-semibold text-gray-900">
-              Filtros de consulta
-            </h2>
+            <h2 className="font-semibold text-gray-900">Filtros de consulta</h2>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -299,7 +295,11 @@ export default function GeneralAttendanceReport() {
             </span>
             <span>
               Horario de referencia:{" "}
-              <strong>08:00 a 17:00</strong>
+              <strong>
+                {report?.schedule
+                  ? `${report.schedule.entry_time} a ${report.schedule.exit_time}`
+                  : "—"}
+              </strong>
             </span>
           </div>
         </div>
@@ -359,10 +359,7 @@ export default function GeneralAttendanceReport() {
             </div>
           ) : rows.length === 0 ? (
             <div className="p-12 text-center">
-              <ClipboardCheck
-                size={32}
-                className="mx-auto text-gray-400"
-              />
+              <ClipboardCheck size={32} className="mx-auto text-gray-400" />
               <p className="mt-3 font-medium text-gray-800">
                 No hay marcaciones para estos filtros
               </p>
@@ -449,9 +446,9 @@ export default function GeneralAttendanceReport() {
         </div>
 
         <p className="text-xs text-gray-500">
-          Las marcaciones se agrupan por empleado y fecha local. Las
-          referencias de horario son 08:00 y 17:00; no se aplica una
-          tolerancia de puntualidad.
+          Las marcaciones se agrupan por empleado y fecha local. Las referencias
+          de horario son 08:00 y 17:00; no se aplica una tolerancia de
+          puntualidad.
         </p>
       </div>
     </Layout>

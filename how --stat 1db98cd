@@ -1,0 +1,13 @@
+[33mcommit 6d7db688bdbf5b02a4d69fdd49cc19296471bc4a[m
+Author: keynneravanser <keynneravanser@gmail.com>
+Date:   Fri Oct 9 14:29:39 2026 -0500
+
+    Mejora de bitacora diaria y proteccion de consultas
+
+ backend/attendance/views.py          |   4 [32m+[m
+ frontend/src/App.jsx                 |  63 [32m+++[m[31m-[m
+ frontend/src/components/Layout.jsx   |   7 [32m+[m[31m-[m
+ frontend/src/pages/Attendance.jsx    | 571 [32m+++++++++++++++++++++[m[31m----------[m
+ frontend/src/pages/MonthlyReport.jsx | 646 [32m+++++++++++++++++++++++++++++++++++[m
+ frontend/src/pages/Reports.jsx       | 152 [32m+++++++++[m
+ 6 files changed, 1253 insertions(+), 190 deletions(-)

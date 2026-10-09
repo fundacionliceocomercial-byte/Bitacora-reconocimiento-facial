@@ -236,7 +236,13 @@ def _build_monthly_rows(logs):
         row["date"] = local_day
 
         if log.log_type == "ENTRADA":
-            row["entrada"] = log
+            # Igual que en general_report y monthly(): nos quedamos con
+            # la PRIMERA entrada del día, no con la última. Esto hace
+            # que el Excel/PDF coincida siempre con lo que muestra la
+            # bitácora web, incluso si alguna vez hay más de una
+            # ENTRADA registrada el mismo día.
+            if row["entrada"] is None:
+                row["entrada"] = log
 
         elif log.log_type == "SALIDA":
             row["salida"] = log

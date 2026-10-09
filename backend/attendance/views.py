@@ -423,13 +423,15 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
 
             results.append(row)
 
-        results.sort(
-            key=lambda item: (
-                item["date"],
-                item["employee_name"].casefold(),
-            ),
-            reverse=True,
-        )
+        # Orden: fecha descendente (más reciente arriba), y dentro del
+        # mismo día, nombre ascendente (A→Z). Se hace en dos pasadas con
+        # sort() estable: primero por nombre (ascendente), y luego por
+        # fecha (descendente) — así la segunda pasada no revuelve el
+        # orden por nombre que ya quedó armado dentro de cada fecha.
+        # (Un solo sort(..., reverse=True) sobre la tupla completa
+        # invertiría también el nombre, dejándolo de Z a A por error.)
+        results.sort(key=lambda item: item["employee_name"].casefold())
+        results.sort(key=lambda item: item["date"], reverse=True)
 
         total_entries = sum(
             1 for row in results if row["entrada_time"] is not None
@@ -563,11 +565,19 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
             row = grouped[key]
 
             if log.log_type == "ENTRADA":
-                row["entrada_time"] = log.timestamp
-                row["entrada_method"] = log.method
-                row["entrada_confidence"] = log.match_confidence
-                row["entrada_log_id"] = log.id
+                # Igual que en general_report: nos quedamos con la
+                # PRIMERA entrada del día, no con la última. Antes esto
+                # se sobreescribía sin condición y, si llegara a haber
+                # más de una ENTRADA el mismo día, la bitácora mensual y
+                # el reporte general podían mostrar una entrada distinta
+                # para el mismo empleado el mismo día.
+                if row["entrada_time"] is None:
+                    row["entrada_time"] = log.timestamp
+                    row["entrada_method"] = log.method
+                    row["entrada_confidence"] = log.match_confidence
+                    row["entrada_log_id"] = log.id
             else:
+                # La salida sí se queda con la última del día.
                 row["salida_time"] = log.timestamp
                 row["salida_method"] = log.method
                 row["salida_confidence"] = log.match_confidence
