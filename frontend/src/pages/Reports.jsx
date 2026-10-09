@@ -8,6 +8,7 @@ import {
   CalendarDays,
   FileText,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 
 const reports = [
@@ -39,6 +40,13 @@ const reports = [
       "Genera y consulta el informe detallado de asistencia de un mes, con opciones de exportación.",
     icon: FileText,
     path: "/reportes/bitacora-mensual",
+  },
+  {
+    title: "Lista de evacuación",
+    description:
+      "Consulta y exporta quién está actualmente dentro de cada sede, con sus contactos de emergencia, para usar en caso de desastre natural.",
+    icon: AlertTriangle,
+    path: "/reportes/evacuacion",
   },
 ];
 

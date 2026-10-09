@@ -165,6 +165,45 @@ export const api = {
     });
   },
 
+  // Empleados actualmente dentro de la sede (lista de evacuación)
+  getEmployeesInside: (sede = "") => {
+    const params = new URLSearchParams();
+
+    if (sede) {
+      params.append("sede", sede);
+    }
+
+    return apiRequest(`/employees/inside/?${params.toString()}`);
+  },
+
+  exportEmployeesInside: async (format, sede = "") => {
+    const params = new URLSearchParams({
+      file_format: format,
+    });
+
+    if (sede) {
+      params.append("sede", sede);
+    }
+
+    const blob = await apiRequest(
+      `/employees/export-inside/?${params.toString()}`
+    );
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = `lista_evacuacion${sede ? `_${sede.toLowerCase()}` : ""}.${
+      format === "pdf" ? "pdf" : "xlsx"
+    }`;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+  },
+
   // Bitácora mensual agrupada por empleado y día
   getMonthlyLogs: (
     year,
@@ -308,21 +347,22 @@ export const api = {
 
     URL.revokeObjectURL(url);
   },
+
   async getGeneralAttendanceReport({
-  start_date,
-  end_date,
-  sede,
-  employee,
-} = {}) {
-  const params = new URLSearchParams();
+    start_date,
+    end_date,
+    sede,
+    employee,
+  } = {}) {
+    const params = new URLSearchParams();
 
-  if (start_date) params.set("start_date", start_date);
-  if (end_date) params.set("end_date", end_date);
-  if (sede) params.set("sede", sede);
-  if (employee) params.set("employee", employee);
+    if (start_date) params.set("start_date", start_date);
+    if (end_date) params.set("end_date", end_date);
+    if (sede) params.set("sede", sede);
+    if (employee) params.set("employee", employee);
 
-  return apiRequest(
-    `/attendance/general-report/?${params.toString()}`
-  );
-},
+    return apiRequest(
+      `/attendance/general-report/?${params.toString()}`
+    );
+  },
 };

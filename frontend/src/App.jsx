@@ -8,6 +8,7 @@ import Reports from "./pages/Reports.jsx";
 import MonthlyReport from "./pages/MonthlyReport.jsx";
 import AttendanceSummary from "./pages/AttendanceSummary.jsx";
 import GeneralAttendanceReport from "./pages/GeneralAttendanceReport.jsx";
+import EvacuationList from "./pages/EvacuationList.jsx";
 
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
@@ -83,6 +84,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <GeneralAttendanceReport />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reportes/evacuacion"
+        element={
+          <ProtectedRoute>
+            <EvacuationList />
           </ProtectedRoute>
         }
       />

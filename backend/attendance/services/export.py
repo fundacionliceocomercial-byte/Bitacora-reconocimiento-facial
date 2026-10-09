@@ -1395,3 +1395,209 @@ def build_monthly_pdf(
     doc.build(elements)
 
     return buffer.getvalue()
+
+# ============================================================
+# LISTA DE EVACUACIÓN (empleados actualmente adentro)
+# ============================================================
+
+HEADERS_ROLL_CALL = [
+    "Empleado",
+    "Documento",
+    "Cargo",
+    "Área",
+    "Sede",
+    "RH",
+    "Teléfono",
+    "Contacto de emergencia",
+    "Parentesco",
+]
+
+
+def _roll_call_row(employee):
+    return [
+        employee.full_name,
+        employee.document_id,
+        employee.position or "-",
+        employee.department or "-",
+        _format_sede(employee.sede),
+        employee.blood_type or "-",
+        employee.phone or "-",
+        employee.emergency_contact_phone or "-",
+        employee.emergency_contact_relationship or "-",
+    ]
+
+
+def build_roll_call_excel(employees, sede="") -> bytes:
+    """
+    Genera el Excel de la lista de evacuación: empleados actualmente
+    ADENTRO, con sus datos de contacto de emergencia.
+    """
+
+    sede_text = _format_sede(sede.upper()) if sede else "Todas las sedes"
+    generated_at = timezone.localtime().strftime("%d/%m/%Y %H:%M")
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Lista de evacuación"
+    ws.sheet_view.showGridLines = False
+
+    last_column = get_column_letter(len(HEADERS_ROLL_CALL))
+
+    if LOGO_PATH.exists():
+        logo = ExcelImage(str(LOGO_PATH))
+        logo.width = 105
+        logo.height = 105
+        ws.add_image(logo, "A1")
+
+    ws.merge_cells(f"B1:{last_column}1")
+    ws["B1"] = "LISTA DE EVACUACIÓN — PERSONAL DENTRO DE LA SEDE"
+    ws["B1"].font = Font(size=16, bold=True, color=COLOR_VERDE_OSCURO)
+    ws["B1"].alignment = Alignment(horizontal="center", vertical="center")
+
+    ws.merge_cells(f"B2:{last_column}2")
+    ws["B2"] = f"Sede: {sede_text}    |    Generado: {generated_at}"
+    ws["B2"].font = Font(size=10, color=COLOR_GRIS_TEXTO)
+    ws["B2"].alignment = Alignment(horizontal="center", vertical="center")
+
+    ws.merge_cells(f"B3:{last_column}3")
+    ws["B3"] = f"Total de personas dentro: {len(employees)}"
+    ws["B3"].font = Font(size=11, bold=True, color=COLOR_NARANJA)
+    ws["B3"].alignment = Alignment(horizontal="center", vertical="center")
+
+    header_row = 5
+    header_fill = PatternFill(start_color=COLOR_VERDE, end_color=COLOR_VERDE, fill_type="solid")
+    header_font = Font(bold=True, color=COLOR_BLANCO)
+    thin_border = Border(
+        left=Side(style="thin", color=COLOR_GRIS_BORDE),
+        right=Side(style="thin", color=COLOR_GRIS_BORDE),
+        top=Side(style="thin", color=COLOR_GRIS_BORDE),
+        bottom=Side(style="thin", color=COLOR_GRIS_BORDE),
+    )
+
+    for col, header in enumerate(HEADERS_ROLL_CALL, start=1):
+        cell = ws.cell(row=header_row, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.border = thin_border
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    for row_index, employee in enumerate(employees, start=header_row + 1):
+        for col, value in enumerate(_roll_call_row(employee), start=1):
+            cell = ws.cell(row=row_index, column=col, value=value)
+            cell.border = thin_border
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+    column_widths = {
+        "A": 26, "B": 16, "C": 20, "D": 20,
+        "E": 12, "F": 8, "G": 16, "H": 20, "I": 18,
+    }
+    for column, width in column_widths.items():
+        ws.column_dimensions[column].width = width
+
+    ws.row_dimensions[1].height = 30
+    ws.freeze_panes = f"A{header_row + 1}"
+
+    if employees:
+        last_row = header_row + len(employees)
+        ws.auto_filter.ref = f"A{header_row}:{last_column}{last_row}"
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    return buffer.getvalue()
+
+
+def build_roll_call_pdf(employees, sede="") -> bytes:
+    """
+    Genera el PDF de la lista de evacuación.
+    """
+
+    sede_text = _format_sede(sede.upper()) if sede else "Todas las sedes"
+    generated_at = timezone.localtime().strftime("%d/%m/%Y %H:%M")
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=landscape(letter),
+        topMargin=1.0 * cm, bottomMargin=1.2 * cm,
+        leftMargin=1.2 * cm, rightMargin=1.2 * cm,
+    )
+
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        "RollCallTitle", parent=styles["Title"], fontName="Helvetica-Bold",
+        fontSize=15, leading=18, alignment=1,
+        textColor=colors.HexColor(f"#{COLOR_VERDE_OSCURO}"), spaceAfter=3,
+    )
+    subtitle_style = ParagraphStyle(
+        "RollCallSubtitle", parent=styles["Normal"], fontName="Helvetica-Bold",
+        fontSize=10, leading=12, alignment=1,
+        textColor=colors.HexColor(f"#{COLOR_NARANJA}"),
+    )
+    cell_style = ParagraphStyle(
+        "RollCallCell", parent=styles["Normal"], fontName="Helvetica",
+        fontSize=7.5, leading=9, alignment=1,
+    )
+    cell_left_style = ParagraphStyle("RollCallCellLeft", parent=cell_style, alignment=0)
+    header_style = ParagraphStyle(
+        "RollCallHeader", parent=styles["Normal"], fontName="Helvetica-Bold",
+        fontSize=7.5, leading=9, textColor=colors.white, alignment=1,
+    )
+
+    elements = []
+
+    if LOGO_PATH.exists():
+        logo = ReportLabImage(str(LOGO_PATH), width=2.6 * cm, height=2.6 * cm)
+        title_block = [
+            Paragraph("LISTA DE EVACUACIÓN — PERSONAL DENTRO DE LA SEDE", title_style),
+            Paragraph(
+                f"Sede: {sede_text} &nbsp;&nbsp;|&nbsp;&nbsp; "
+                f"Total dentro: {len(employees)} &nbsp;&nbsp;|&nbsp;&nbsp; "
+                f"Generado: {generated_at}",
+                subtitle_style,
+            ),
+        ]
+        header_table = Table([[logo, title_block]], colWidths=[3.5 * cm, 21.7 * cm])
+        header_table.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+        elements.append(header_table)
+    else:
+        elements.append(Paragraph("LISTA DE EVACUACIÓN — PERSONAL DENTRO DE LA SEDE", title_style))
+        elements.append(Paragraph(
+            f"Sede: {sede_text} | Total dentro: {len(employees)} | Generado: {generated_at}",
+            subtitle_style,
+        ))
+
+    elements.append(Spacer(1, 10))
+
+    data = [[Paragraph(h, header_style) for h in HEADERS_ROLL_CALL]]
+    for employee in employees:
+        row = _roll_call_row(employee)
+        data.append([
+            Paragraph(str(row[0]), cell_left_style),
+            Paragraph(str(row[1]), cell_style),
+            Paragraph(str(row[2]), cell_left_style),
+            Paragraph(str(row[3]), cell_left_style),
+            Paragraph(str(row[4]), cell_style),
+            Paragraph(str(row[5]), cell_style),
+            Paragraph(str(row[6]), cell_style),
+            Paragraph(str(row[7]), cell_style),
+            Paragraph(str(row[8]), cell_style),
+        ])
+
+    col_widths = [3.5*cm, 2.3*cm, 2.8*cm, 2.8*cm, 1.8*cm, 1.3*cm, 2.8*cm, 2.8*cm, 2.3*cm]
+    table = Table(data, colWidths=col_widths, repeatRows=1)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(f"#{COLOR_VERDE}")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor(f"#{COLOR_GRIS_BORDE}")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor(f"#{COLOR_GRIS_FONDO}")]),
+        ("LEFTPADDING", (0, 0), (-1, -1), 4),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+    ]))
+
+    elements.append(table)
+
+    doc.build(elements)
+    return buffer.getvalue()

@@ -27,7 +27,12 @@ from .services.facial_recognition import (
     NoFaceDetectedError,
     MultipleFacesDetectedError,
 )
-from .services.export import build_monthly_excel, build_monthly_pdf
+from .services.export import (
+    build_monthly_excel,
+    build_monthly_pdf,
+    build_roll_call_excel,
+    build_roll_call_pdf,
+)
 
 
 # Horario oficial de referencia. Zona horaria configurada en Django.
@@ -99,6 +104,93 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=False, methods=["get"], url_path="inside")
+    def inside(self, request):
+        """
+        Lista de empleados que, según su última marcación, están
+        actualmente ADENTRO. Pensada para llamados a lista en caso de
+        emergencia (ej. evacuación por desastre natural), por eso NO
+        pagina: siempre devuelve el listado completo.
+
+        GET /api/employees/inside/?sede=CENTRO|NORTE
+        """
+        sede = request.query_params.get("sede", "").strip().upper()
+
+        if sede and sede not in ("CENTRO", "NORTE"):
+            return Response(
+                {"detail": "La sede debe ser CENTRO o NORTE."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        employees = Employee.objects.filter(status="ACTIVO")
+
+        if sede:
+            employees = employees.filter(sede=sede)
+
+        inside = [emp for emp in employees if emp.current_status == "ADENTRO"]
+        inside.sort(key=lambda emp: emp.full_name.casefold())
+
+        serializer = EmployeeSerializer(inside, many=True)
+
+        return Response(
+            {
+                "sede": sede or None,
+                "count": len(inside),
+                "results": serializer.data,
+            }
+        )
+
+    @action(detail=False, methods=["get"], url_path="export-inside")
+    def export_inside(self, request):
+        """
+        Exporta a Excel o PDF la lista de empleados actualmente ADENTRO,
+        para llamado a lista en caso de emergencia.
+
+        GET /api/employees/export-inside/?sede=CENTRO|NORTE&file_format=xlsx|pdf
+        """
+        sede = request.query_params.get("sede", "").strip().upper()
+
+        if sede and sede not in ("CENTRO", "NORTE"):
+            return Response(
+                {"detail": "La sede debe ser CENTRO o NORTE."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        file_format = request.query_params.get("file_format", "xlsx").lower()
+
+        if file_format not in ("xlsx", "pdf"):
+            return Response(
+                {"detail": "El formato debe ser 'xlsx' o 'pdf'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        employees = Employee.objects.filter(status="ACTIVO")
+
+        if sede:
+            employees = employees.filter(sede=sede)
+
+        inside = [emp for emp in employees if emp.current_status == "ADENTRO"]
+        inside.sort(key=lambda emp: emp.full_name.casefold())
+
+        filename = "lista_evacuacion" + (f"_{sede.lower()}" if sede else "")
+
+        if file_format == "pdf":
+            content = build_roll_call_pdf(inside, sede=sede)
+            response = HttpResponse(content, content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{filename}.pdf"'
+            return response
+
+        content = build_roll_call_excel(inside, sede=sede)
+        response = HttpResponse(
+            content,
+            content_type=(
+                "application/vnd.openxmlformats-officedocument."
+                "spreadsheetml.sheet"
+            ),
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}.xlsx"'
+        return response
 
 
 class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
@@ -566,11 +658,7 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
 
             if log.log_type == "ENTRADA":
                 # Igual que en general_report: nos quedamos con la
-                # PRIMERA entrada del día, no con la última. Antes esto
-                # se sobreescribía sin condición y, si llegara a haber
-                # más de una ENTRADA el mismo día, la bitácora mensual y
-                # el reporte general podían mostrar una entrada distinta
-                # para el mismo empleado el mismo día.
+                # PRIMERA entrada del día, no con la última.
                 if row["entrada_time"] is None:
                     row["entrada_time"] = log.timestamp
                     row["entrada_method"] = log.method
