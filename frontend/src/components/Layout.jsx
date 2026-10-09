@@ -45,8 +45,13 @@ export default function Layout({ children }) {
           <NavLink to="/empleados" className={linkClass}>
             Empleados
           </NavLink>
+
           <NavLink to="/bitacora" className={linkClass}>
             Bitácora
+          </NavLink>
+
+          <NavLink to="/reportes" className={linkClass}>
+            Reportes
           </NavLink>
         </nav>
         <div className="mt-4 pt-4 border-t border-gray-100">

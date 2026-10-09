@@ -398,6 +398,8 @@ class ExportMonthlyAttendanceView(APIView):
                 logs,
                 year,
                 month,
+                sede=sede,
+                day=day,
             )
 
             response = HttpResponse(
@@ -415,6 +417,8 @@ class ExportMonthlyAttendanceView(APIView):
             logs,
             year,
             month,
+            sede=sede,
+            day=day,
         )
 
         response = HttpResponse(
