@@ -1,10 +1,14 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+
 import Login from "./pages/Login.jsx";
 import Employees from "./pages/Employees.jsx";
 import Attendance from "./pages/Attendance.jsx";
 import Reports from "./pages/Reports.jsx";
 import MonthlyReport from "./pages/MonthlyReport.jsx";
+import AttendanceSummary from "./pages/AttendanceSummary.jsx";
+import GeneralAttendanceReport from "./pages/GeneralAttendanceReport.jsx";
+
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 export default function App() {
@@ -43,7 +47,7 @@ export default function App() {
         path="/reportes/resumen"
         element={
           <ProtectedRoute>
-            <Reports />
+            <AttendanceSummary />
           </ProtectedRoute>
         }
       />
@@ -74,16 +78,17 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
-        path="/"
-        element={<Navigate to="/empleados" replace />}
+        path="/reportes/general"
+        element={
+          <ProtectedRoute>
+            <GeneralAttendanceReport />
+          </ProtectedRoute>
+        }
       />
+      <Route path="/" element={<Navigate to="/empleados" replace />} />
 
-      <Route
-        path="*"
-        element={<Navigate to="/empleados" replace />}
-      />
+      <Route path="*" element={<Navigate to="/empleados" replace />} />
     </Routes>
   );
 }
