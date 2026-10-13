@@ -9,6 +9,7 @@ import MonthlyReport from "./pages/MonthlyReport.jsx";
 import AttendanceSummary from "./pages/AttendanceSummary.jsx";
 import GeneralAttendanceReport from "./pages/GeneralAttendanceReport.jsx";
 import EvacuationList from "./pages/EvacuationList.jsx";
+import EmployeeHistory from "./pages/EmployeeHistory.jsx";
 
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
@@ -57,7 +58,7 @@ export default function App() {
         path="/reportes/empleado"
         element={
           <ProtectedRoute>
-            <Reports />
+            <EmployeeHistory />
           </ProtectedRoute>
         }
       />
@@ -66,7 +67,7 @@ export default function App() {
         path="/reportes/control-diario"
         element={
           <ProtectedRoute>
-            <Reports />
+            <Attendance />
           </ProtectedRoute>
         }
       />
