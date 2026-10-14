@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../components/Layout.jsx";
 import { api } from "../api/client";
+import SedeBadge from "../components/SedeBadge.jsx";
+import SummaryCard from "../components/SummaryCard.jsx";
+import NotesCell from "../components/NotesCell.jsx";
+import { formatTime, formatDateOnly, formatConfidence } from "../utils/formatters.js";
 import {
   FileSpreadsheet,
   FileText,
   RefreshCw,
   ChevronLeft,
   ChevronRight,
-  Pencil,
-  Check,
-  X as XIcon,
   ClipboardList,
   LogIn,
   LogOut,
@@ -33,48 +34,6 @@ const MONTHS = [
   "Noviembre",
   "Diciembre",
 ];
-
-function formatTime(iso) {
-  if (!iso) return null;
-
-  return new Date(iso).toLocaleTimeString("es-CO", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function formatDateOnly(dateStr) {
-  if (!dateStr) return "";
-
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const localDate = new Date(year, month - 1, day);
-
-  return localDate.toLocaleDateString("es-CO", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatConfidence(value) {
-  return value != null ? `${Math.round(value * 100)}%` : null;
-}
-
-function SedeBadge({ sede }) {
-  const isNorte = sede === "NORTE";
-
-  return (
-    <span
-      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-        isNorte
-          ? "text-blue-700 bg-blue-50"
-          : "text-green-700 bg-green-50"
-      }`}
-    >
-      {isNorte ? "Norte" : "Centro"}
-    </span>
-  );
-}
 
 function TimeBadge({ time, confidence, type }) {
   if (!time) {
@@ -100,118 +59,6 @@ function TimeBadge({ time, confidence, type }) {
           {formatConfidence(confidence)}
         </span>
       )}
-    </div>
-  );
-}
-
-function NotesCell({ row, onSaved }) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(row.notes || "");
-  const [saving, setSaving] = useState(false);
-
-  const targetLogId =
-    row.notes_log_id ||
-    row.entrada_log_id ||
-    row.salida_log_id;
-
-  const handleSave = async () => {
-    if (!targetLogId) return;
-
-    setSaving(true);
-
-    try {
-      await onSaved(targetLogId, value.trim());
-      setEditing(false);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (!editing) {
-    return (
-      <div className="flex items-center gap-2 group">
-        <span
-          className={`text-sm ${
-            row.notes ? "text-gray-600" : "text-gray-300"
-          }`}
-        >
-          {row.notes || "Sin observación"}
-        </span>
-
-        <button
-          type="button"
-          onClick={() => {
-            setValue(row.notes || "");
-            setEditing(true);
-          }}
-          className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-brand-600 transition"
-          title="Editar observación"
-        >
-          <Pencil size={13} />
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <input
-        autoFocus
-        type="text"
-        value={value}
-        maxLength={255}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleSave();
-          }
-
-          if (e.key === "Escape") {
-            setEditing(false);
-          }
-        }}
-        className="flex-1 min-w-[160px] px-2 py-1 border border-brand-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
-        disabled={saving}
-      />
-
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={saving}
-        className="text-brand-600 hover:text-brand-700 disabled:opacity-40"
-        title="Guardar"
-      >
-        <Check size={15} />
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setEditing(false)}
-        disabled={saving}
-        className="text-gray-400 hover:text-gray-600 disabled:opacity-40"
-        title="Cancelar"
-      >
-        <XIcon size={15} />
-      </button>
-    </div>
-  );
-}
-
-function SummaryCard({ icon: Icon, label, value }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center">
-          <Icon size={19} />
-        </div>
-
-        <div>
-          <p className="text-xs text-gray-500">{label}</p>
-          <p className="text-xl font-semibold text-gray-800 mt-0.5">
-            {value}
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

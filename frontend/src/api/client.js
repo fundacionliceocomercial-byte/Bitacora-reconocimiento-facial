@@ -261,36 +261,6 @@ export const api = {
     return apiRequest(`/attendance/summary/?${params.toString()}`);
   },
 
-  // Marcaciones individuales.
-  // El backend actual solo tiene filtros generales por empleado,
-  // tipo y método; no se envían filtros de fecha o sede no configurados.
-  getAttendanceReport: ({
-    employee = "",
-    logType = "",
-    method = "",
-    ordering = "-timestamp",
-  } = {}) => {
-    const params = new URLSearchParams();
-
-    if (employee) {
-      params.append("employee", employee);
-    }
-
-    if (logType) {
-      params.append("log_type", logType);
-    }
-
-    if (method) {
-      params.append("method", method);
-    }
-
-    if (ordering) {
-      params.append("ordering", ordering);
-    }
-
-    return apiRequest(`/attendance/?${params.toString()}`);
-  },
-
   // Actualizar observaciones de una marcación
   updateLogNotes: (logId, notes) =>
     apiRequest(`/attendance/${logId}/notes/`, {
