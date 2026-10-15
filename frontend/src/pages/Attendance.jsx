@@ -89,7 +89,7 @@ export default function Attendance() {
   const entries = logs.filter((row) => row.entrada_time).length;
   const exits = logs.filter((row) => row.salida_time).length;
   const stillInside = logs.filter(
-    (row) => row.entrada_time && !row.salida_time
+    (row) => row.status === "JORNADA_EN_CURSO"
   ).length;
 
   const handleDayChange = (selectedDay) => {
@@ -332,9 +332,13 @@ export default function Attendance() {
                             </span>
                           )}
                         </div>
+                      ) : row.entrada_time && row.status === "PENDIENTE_SALIDA" ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-red-700 bg-red-50">
+                          Sin marcar salida
+                        </span>
                       ) : row.entrada_time ? (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-gray-500 bg-gray-100">
-                          Sin salida registrada
+                          Sigue adentro
                         </span>
                       ) : (
                         <span className="text-xs text-gray-300">—</span>

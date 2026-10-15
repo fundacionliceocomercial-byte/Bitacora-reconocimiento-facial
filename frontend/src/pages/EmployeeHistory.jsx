@@ -14,6 +14,7 @@ import {
   ClockAlert,
   AlertCircle,
   RefreshCw,
+  Clock,
 } from "lucide-react";
 
 const todayLocal = () => {
@@ -287,13 +288,12 @@ export default function EmployeeHistory() {
             </div>
 
             {/* Métricas del empleado */}
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
-              <MetricCard icon={CalendarDays} title="Días con marcación" value={summary.days_with_records} />
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
               <MetricCard icon={LogIn} title="Entradas" value={summary.entries} />
               <MetricCard icon={LogOut} title="Salidas" value={summary.exits} />
-              <MetricCard icon={ClipboardCheck} title="Jornadas completas" value={summary.complete_days} />
               <MetricCard icon={ClockAlert} title="Salidas pendientes" value={summary.pending_exits} />
               <MetricCard icon={AlertCircle} title="Salidas sin entrada" value={summary.exits_without_entry} />
+              <MetricCard icon={Clock} title="Horas trabajadas" value={summary.total_hours || "0min"} />
             </div>
 
             {/* Línea de tiempo */}
@@ -350,6 +350,13 @@ export default function EmployeeHistory() {
                               Sigue adentro
                             </span>
                           ) : null}
+
+                          {row.hours_worked && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                              <Clock size={12} />
+                              {row.hours_worked}
+                            </span>
+                          )}
                         </div>
 
                         {row.notes && (

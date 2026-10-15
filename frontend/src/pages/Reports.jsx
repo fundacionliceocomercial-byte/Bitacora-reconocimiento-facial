@@ -5,6 +5,7 @@ import Layout from "../components/Layout.jsx";
 import {
   BarChart3,
   UserRound,
+  ClipboardCheck,
   CalendarDays,
   FileText,
   ChevronRight,
@@ -28,11 +29,11 @@ const reports = [
     path: "/reportes/empleado",
   },
   {
-    title: "Control diario",
+    title: "Reporte general",
     description:
-      "Consulta quién registró entrada, quién registró salida y quién continúa dentro en una fecha determinada.",
-    icon: CalendarDays,
-    path: "/reportes/control-diario",
+      "Consulta el estado de jornada de todos los empleados (completa, pendiente, sin marcar salida) en un rango de fechas.",
+    icon: ClipboardCheck,
+    path: "/reportes/general",
   },
   {
     title: "Bitácora mensual",

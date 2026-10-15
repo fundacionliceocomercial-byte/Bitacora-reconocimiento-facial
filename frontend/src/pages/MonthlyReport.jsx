@@ -151,7 +151,7 @@ export default function MonthlyReport() {
   const entries = logs.filter((row) => row.entrada_time).length;
   const exits = logs.filter((row) => row.salida_time).length;
   const stillInside = logs.filter(
-    (row) => row.entrada_time && !row.salida_time
+    (row) => row.status === "JORNADA_EN_CURSO"
   ).length;
 
   const hasFilters = Boolean(day || sede);
@@ -424,6 +424,10 @@ export default function MonthlyReport() {
                           confidence={row.salida_confidence}
                           type="salida"
                         />
+                      ) : row.entrada_time && row.status === "PENDIENTE_SALIDA" ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-red-700 bg-red-50">
+                          Sin marcar salida
+                        </span>
                       ) : row.entrada_time ? (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-gray-500 bg-gray-100">
                           Sigue adentro

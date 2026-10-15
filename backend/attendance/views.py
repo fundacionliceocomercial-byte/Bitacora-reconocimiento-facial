@@ -50,6 +50,52 @@ def _format_remaining(seconds):
     return f"{secs} seg"
 
 
+def _format_duration(minutes):
+    """Convierte minutos totales en un texto tipo '8h 15min'."""
+
+    if minutes is None:
+        return None
+
+    hours, mins = divmod(max(int(minutes), 0), 60)
+
+    if hours and mins:
+        return f"{hours}h {mins}min"
+
+    if hours:
+        return f"{hours}h"
+
+    return f"{mins}min"
+
+
+def _compute_attendance_status(row_day, has_entry, has_exit, today, current_time):
+    """
+    Determina el estado de la jornada de un día puntual.
+
+    COMPLETA: tiene entrada y salida.
+    SALIDA_SIN_ENTRADA: caso raro, hay salida pero no entrada ese día.
+    PENDIENTE_SALIDA: hay entrada, no hay salida, y el día ya pasó (o es
+        hoy pero ya pasó la hora de salida oficial) -> "se le olvidó
+        marcar salida", no cuenta como jornada en curso.
+    JORNADA_EN_CURSO: hay entrada, no hay salida, es hoy y todavía no
+        pasa la hora de salida oficial -> sigue trabajando, normal.
+    SIN_MARCADAS: no hay ningún registro ese día (no debería pasar en
+        la práctica, ya que la fila solo existe si hubo al menos uno).
+    """
+
+    if has_entry and has_exit:
+        return "COMPLETA"
+
+    if has_exit and not has_entry:
+        return "SALIDA_SIN_ENTRADA"
+
+    if has_entry and not has_exit:
+        if row_day < today or (row_day == today and current_time >= HORA_SALIDA_OFICIAL):
+            return "PENDIENTE_SALIDA"
+        return "JORNADA_EN_CURSO"
+
+    return "SIN_MARCADAS"
+
+
 class EmployeeViewSet(viewsets.ModelViewSet):
     """CRUD de empleados y registro de rostro de referencia."""
 
@@ -349,7 +395,8 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
         employee=ID del empleado
 
         Devuelve una fila por empleado y día con las marcaciones
-        combinadas, estado de jornada y referencias horarias.
+        combinadas, estado de jornada, horas trabajadas (cuando hay
+        entrada y salida el mismo día) y referencias horarias.
         """
 
         today = timezone.localdate()
@@ -470,29 +517,33 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
         current_time = now_local.time().replace(tzinfo=None)
 
         results = []
+        total_worked_minutes = 0
 
         for row in grouped.values():
             row_day = date.fromisoformat(row["date"])
             has_entry = row.pop("_has_entry")
             has_exit = row.pop("_has_exit")
 
-            if has_entry and has_exit:
-                attendance_status = "COMPLETA"
-            elif has_exit and not has_entry:
-                attendance_status = "SALIDA_SIN_ENTRADA"
-            elif has_entry and not has_exit:
-                if row_day < today or (
-                    row_day == today
-                    and current_time >= HORA_SALIDA_OFICIAL
-                ):
-                    attendance_status = "PENDIENTE_SALIDA"
-                else:
-                    attendance_status = "JORNADA_EN_CURSO"
-            else:
-                attendance_status = "SIN_MARCADAS"
+            attendance_status = _compute_attendance_status(
+                row_day, has_entry, has_exit, today, current_time
+            )
 
             entrada = row["entrada_time"]
             salida = row["salida_time"]
+
+            # Horas trabajadas: solo cuando hay entrada Y salida el
+            # mismo día, y la salida es posterior a la entrada (evita
+            # valores negativos por datos inconsistentes). Un día sin
+            # salida (PENDIENTE_SALIDA) nunca suma horas.
+            hours_worked_minutes = None
+            if entrada and salida and salida > entrada:
+                hours_worked_minutes = int(
+                    (salida - entrada).total_seconds() // 60
+                )
+                total_worked_minutes += hours_worked_minutes
+
+            row["hours_worked_minutes"] = hours_worked_minutes
+            row["hours_worked"] = _format_duration(hours_worked_minutes)
 
             row["entrada_time"] = (
                 entrada.strftime("%H:%M:%S") if entrada else None
@@ -517,11 +568,8 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Orden: fecha descendente (más reciente arriba), y dentro del
         # mismo día, nombre ascendente (A→Z). Se hace en dos pasadas con
-        # sort() estable: primero por nombre (ascendente), y luego por
-        # fecha (descendente) — así la segunda pasada no revuelve el
-        # orden por nombre que ya quedó armado dentro de cada fecha.
-        # (Un solo sort(..., reverse=True) sobre la tupla completa
-        # invertiría también el nombre, dejándolo de Z a A por error.)
+        # sort() estable en vez de un solo reverse=True sobre la tupla
+        # completa, que invertiría también el nombre por error.
         results.sort(key=lambda item: item["employee_name"].casefold())
         results.sort(key=lambda item: item["date"], reverse=True)
 
@@ -562,6 +610,8 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
                     "pending_exits": pending_exits,
                     "exits_without_entry": missing_entries,
                     "ongoing_days": ongoing_days,
+                    "total_hours_minutes": total_worked_minutes,
+                    "total_hours": _format_duration(total_worked_minutes),
                 },
                 "count": len(results),
                 "results": results,
@@ -572,11 +622,11 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
     def monthly(self, request):
         """Bitácora mensual agrupada por empleado y día."""
 
-        today = timezone.now()
+        today_dt = timezone.now()
 
         try:
-            year = int(request.query_params.get("year", today.year))
-            month = int(request.query_params.get("month", today.month))
+            year = int(request.query_params.get("year", today_dt.year))
+            month = int(request.query_params.get("month", today_dt.month))
         except (TypeError, ValueError):
             return Response(
                 {"detail": "El año y el mes deben ser valores numéricos."},
@@ -652,6 +702,8 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
                     "salida_log_id": None,
                     "notes": "",
                     "notes_log_id": None,
+                    "_has_entry": False,
+                    "_has_exit": False,
                 }
 
             row = grouped[key]
@@ -664,16 +716,33 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
                     row["entrada_method"] = log.method
                     row["entrada_confidence"] = log.match_confidence
                     row["entrada_log_id"] = log.id
+                row["_has_entry"] = True
             else:
                 # La salida sí se queda con la última del día.
                 row["salida_time"] = log.timestamp
                 row["salida_method"] = log.method
                 row["salida_confidence"] = log.match_confidence
                 row["salida_log_id"] = log.id
+                row["_has_exit"] = True
 
             if log.notes:
                 row["notes"] = log.notes
                 row["notes_log_id"] = log.id
+
+        # Mismo cálculo de estado que general_report, así la bitácora
+        # web distingue "sigue adentro hoy" de "no se marcó la salida
+        # un día que ya pasó" (PENDIENTE_SALIDA), en vez de mostrar
+        # siempre lo mismo para los dos casos.
+        today_local = timezone.localdate()
+        current_time = timezone.localtime(timezone.now()).time().replace(tzinfo=None)
+
+        for row in grouped.values():
+            row_day = date.fromisoformat(row["date"])
+            has_entry = row.pop("_has_entry")
+            has_exit = row.pop("_has_exit")
+            row["status"] = _compute_attendance_status(
+                row_day, has_entry, has_exit, today_local, current_time
+            )
 
         def sort_key(row):
             row_date = date.fromisoformat(row["date"])
@@ -785,9 +854,19 @@ class AttendanceLogViewSet(viewsets.ReadOnlyModelViewSet):
                     status=status.HTTP_429_TOO_MANY_REQUESTS,
                 )
 
+        # Si el último registro es de un día distinto a hoy, siempre es
+        # una ENTRADA nueva, sin importar qué haya sido lo último — así
+        # evitamos que una SALIDA que nunca se marcó "arrastre" el
+        # estado y haga que la próxima marcación real (al día
+        # siguiente) se registre como SALIDA por error.
+        last_log_is_today = (
+            last_log is not None
+            and timezone.localtime(last_log.timestamp).date() == timezone.localdate()
+        )
+
         log_type = (
             "ENTRADA"
-            if last_log is None or last_log.log_type == "SALIDA"
+            if not last_log_is_today or last_log.log_type == "SALIDA"
             else "SALIDA"
         )
 
