@@ -1407,11 +1407,11 @@ HEADERS_ROLL_CALL = [
     "Área",
     "Sede",
     "RH",
+    "EPS",
     "Teléfono",
     "Contacto de emergencia",
     "Parentesco",
 ]
-
 
 def _roll_call_row(employee):
     return [
@@ -1421,6 +1421,7 @@ def _roll_call_row(employee):
         employee.department or "-",
         _format_sede(employee.sede),
         employee.blood_type or "-",
+        employee.eps or "-",
         employee.phone or "-",
         employee.emergency_contact_phone or "-",
         employee.emergency_contact_relationship or "-",
@@ -1489,7 +1490,7 @@ def build_roll_call_excel(employees, sede="") -> bytes:
 
     column_widths = {
         "A": 26, "B": 16, "C": 20, "D": 20,
-        "E": 12, "F": 8, "G": 16, "H": 20, "I": 18,
+        "E": 12, "F": 8, "G": 16, "H": 16, "I": 20, "J": 18,
     }
     for column, width in column_widths.items():
         ws.column_dimensions[column].width = width
@@ -1581,9 +1582,10 @@ def build_roll_call_pdf(employees, sede="") -> bytes:
             Paragraph(str(row[6]), cell_style),
             Paragraph(str(row[7]), cell_style),
             Paragraph(str(row[8]), cell_style),
+            Paragraph(str(row[9]), cell_style),
         ])
 
-    col_widths = [3.5*cm, 2.3*cm, 2.8*cm, 2.8*cm, 1.8*cm, 1.3*cm, 2.8*cm, 2.8*cm, 2.3*cm]
+    col_widths = [3.2*cm, 2.1*cm, 2.5*cm, 2.5*cm, 1.6*cm, 1.2*cm, 2.3*cm, 2.5*cm, 2.5*cm, 2.1*cm]
     table = Table(data, colWidths=col_widths, repeatRows=1)
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(f"#{COLOR_VERDE}")),

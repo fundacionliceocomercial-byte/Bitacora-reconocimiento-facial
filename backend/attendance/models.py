@@ -57,6 +57,7 @@ class Employee(models.Model):
     emergency_contact_relationship = models.CharField(
         "Parentesco del contacto de emergencia", max_length=50, blank=True
     )
+    eps = models.CharField("EPS", max_length=100, blank=True)
 
     # Foto de referencia usada para generar el encoding
     reference_photo = models.ImageField(

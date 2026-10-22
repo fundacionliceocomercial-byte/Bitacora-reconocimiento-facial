@@ -156,12 +156,13 @@ export default function EvacuationList() {
                 <th className="px-4 py-3">Cargo / Área</th>
                 <th className="px-4 py-3">Sede</th>
                 <th className="px-4 py-3">RH</th>
+                <th className="px-4 py-3">EPS</th>
                 <th className="px-4 py-3">Teléfono</th>
                 <th className="px-4 py-3">Contacto de emergencia</th>
               </tr>
             </thead>
             <tbody>
-              {loading && (
+              {!loading && employees.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-4 py-10 text-center text-gray-400">
                     <div className="inline-flex items-center gap-2">
@@ -196,6 +197,9 @@ export default function EvacuationList() {
                     ) : (
                       <span className="text-xs text-gray-300">—</span>
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">
+                    {emp.eps || "—"}
                   </td>
                   <td className="px-4 py-3 text-gray-600">
                     {emp.phone ? (

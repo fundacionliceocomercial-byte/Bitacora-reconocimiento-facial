@@ -31,6 +31,7 @@ const emptyForm = {
   phone: "",
   emergency_contact_phone: "",
   emergency_contact_relationship: "",
+  eps: "",
 };
 
 export default function Employees() {
@@ -142,6 +143,7 @@ export default function Employees() {
       phone: employee.phone || "",
       emergency_contact_phone: employee.emergency_contact_phone || "",
       emergency_contact_relationship: employee.emergency_contact_relationship || "",
+      eps: employee.eps || "",
     });
 
     setShowForm(true);
@@ -387,6 +389,7 @@ export default function Employees() {
               ["phone", "Teléfono"],
               ["emergency_contact_phone", "Teléfono de contacto de emergencia"],
               ["emergency_contact_relationship", "Parentesco del contacto de emergencia"],
+              ["eps", "EPS"],
             ].map(([key, label]) => (
               <div key={key}>
                 <label className="block text-sm font-medium text-gray-600 mb-1.5">

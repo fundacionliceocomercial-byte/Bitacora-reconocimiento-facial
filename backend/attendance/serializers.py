@@ -24,6 +24,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "phone",
             "emergency_contact_phone",
             "emergency_contact_relationship",
+            "eps",
             "reference_photo",
             "has_face_registered",
             "current_status",
